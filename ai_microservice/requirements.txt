@@ -1,0 +1,8 @@
+fastapi
+uvicorn[standard]
+sqlalchemy
+pgvector
+sentence-transformers
+transformers
+pydantic
+psycopg2-binary
