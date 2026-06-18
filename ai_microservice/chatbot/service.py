@@ -25,7 +25,7 @@ def _load_model():
             generator = pipeline(
                 "text-generation",
                 model=MODEL_NAME,
-                model_kwargs={"torch_dtype": "auto"},
+                model_kwargs={"dtype": "auto"},
                 device="cpu",
             )
         except Exception as e:
