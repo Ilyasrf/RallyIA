@@ -1,8 +1,15 @@
-from transformers import pipeline
+import logging
 import os
+import threading
+
+from transformers import pipeline
+
+logger = logging.getLogger(__name__)
 
 MODEL_NAME = os.getenv("CHAT_MODEL_NAME", "Qwen/Qwen2.5-0.5B-Instruct")
+MAX_TOKENS = int(os.getenv("CHAT_MAX_TOKENS", "250"))
 generator = None
+_load_lock = threading.Lock()
 
 
 def _load_model():
@@ -10,14 +17,19 @@ def _load_model():
     if generator is not None:
         return
 
-    try:
-        generator = pipeline(
-            "text-generation",
-            model=MODEL_NAME,
-            model_kwargs={"torch_dtype": "auto"},
-        )
-    except Exception as e:
-        print(f"Could not load LLM: {e}")
+    with _load_lock:
+        if generator is not None:
+            return
+
+        try:
+            generator = pipeline(
+                "text-generation",
+                model=MODEL_NAME,
+                model_kwargs={"torch_dtype": "auto"},
+                device="cpu",
+            )
+        except Exception as e:
+            logger.error("Could not load LLM: %s", e)
 
 
 def generate_chat_reply(messages: list, context_properties: list) -> str:
@@ -53,9 +65,10 @@ def generate_chat_reply(messages: list, context_properties: list) -> str:
     try:
         result = generator(
             formatted_messages,
-            max_new_tokens=250,
+            max_new_tokens=MAX_TOKENS,
             do_sample=True,
             temperature=0.6,
+            return_full_text=False,
         )
         output = result[0]["generated_text"]
 
@@ -65,5 +78,5 @@ def generate_chat_reply(messages: list, context_properties: list) -> str:
             return output.strip()
         return str(output)
     except Exception as e:
-        print(f"Generation error: {e}")
+        logger.error("Generation error: %s", e)
         return "I encountered an error trying to process your request."

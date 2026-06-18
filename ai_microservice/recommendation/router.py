@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import select
@@ -5,6 +7,8 @@ from sqlalchemy import select
 from shared.database import SessionLocal, Property
 from shared.embedding_service import get_embedding
 from recommendation.schemas import QuizRequest, RecommendationResponse, PropertyResponse
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/recommend", tags=["Recommendation"])
 
@@ -28,7 +32,8 @@ def recommend_properties(quiz: QuizRequest, db: Session = Depends(get_db)):
     try:
         user_embedding = get_embedding(persona_text)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Embedding failed: {str(e)}")
+        logger.exception("Embedding failed")
+        raise HTTPException(status_code=500, detail="Embedding failed.")
 
     try:
         query = (
@@ -72,4 +77,5 @@ def recommend_properties(quiz: QuizRequest, db: Session = Depends(get_db)):
         )
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Search failed: {str(e)}")
+        logger.exception("Search failed")
+        raise HTTPException(status_code=500, detail="Search failed.")
