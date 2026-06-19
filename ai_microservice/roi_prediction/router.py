@@ -26,7 +26,7 @@ def get_db():
 
 @router.post("", response_model=ROIPredictionResponse)
 def predict_single(
-    property_id: int,
+    property_id: str,
     capital: float,
     lock_in_years: int,
     db: Session = Depends(get_db),

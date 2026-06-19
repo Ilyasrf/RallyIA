@@ -27,7 +27,7 @@ def get_db():
 
 @router.post("", response_model=RiskAssessmentResponse)
 def assess_single(
-    property_id: int,
+    property_id: str,
     quiz: QuizRequest,
     db: Session = Depends(get_db),
 ):

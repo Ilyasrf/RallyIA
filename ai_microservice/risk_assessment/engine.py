@@ -29,14 +29,19 @@ _EXPERIENCE_MODIFIER = {
 
 def assess_risk(property: Property, user_risk_tolerance: str, user_experience: str) -> dict:
     tolerance = user_risk_tolerance.strip().lower()
+    if tolerance == "moderate":
+        tolerance = "medium"
+
     experience = user_experience.strip().lower()
-    prop_risk = (property.risk_rating or "medium").strip().lower()
+    prop_risk = (property.risk_assessment or "medium").strip().lower()
 
     base = _RISK_MAP.get(prop_risk, 50)
 
-    lock_in = min(property.lock_in_years * 5, 30)
 
-    yield_val = property.expected_yield if property.expected_yield else 5.0
+    lock_in_years = (property.investment_period / 12) if property.investment_period else 0
+    lock_in = min(lock_in_years * 5, 30)
+
+    yield_val = property.rental_yield if property.rental_yield else 5.0
     yield_factor = max(min((yield_val - 5.0) * 10, 30), 0)
 
     alignment_label, alignment_penalty = _ALIGNMENT_MATRIX.get(
@@ -56,7 +61,7 @@ def assess_risk(property: Property, user_risk_tolerance: str, user_experience: s
         level = "High"
 
     explanation = _build_explanation(base, lock_in, yield_factor, yield_val,
-                                     alignment_label, tolerance, property.lock_in_years,
+                                     alignment_label, tolerance, lock_in_years,
                                      experience)
 
     return {

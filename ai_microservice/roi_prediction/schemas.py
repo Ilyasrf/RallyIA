@@ -10,7 +10,7 @@ class ROIBreakdown(BaseModel):
 
 
 class ROIPredictionResponse(BaseModel):
-    property_id: int
+    property_id: str
     annual_return_pct: float
     total_return_pct: float
     annual_return_mad: float
@@ -20,7 +20,7 @@ class ROIPredictionResponse(BaseModel):
 
 
 class BatchROIRequest(BaseModel):
-    property_ids: List[int]
+    property_ids: List[str]
     capital: float
     lock_in_years: int
 

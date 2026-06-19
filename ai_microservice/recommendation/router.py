@@ -43,7 +43,7 @@ def recommend_properties(quiz: QuizRequest, db: Session = Depends(get_db)):
         query = (
             select(Property)
             .filter(Property.min_investment <= quiz.capital)
-            .filter(Property.lock_in_years <= quiz.lock_in_years)
+            .filter(Property.investment_period <= quiz.lock_in_years * 12)
             .order_by(Property.embedding.cosine_distance(user_embedding))
             .limit(3)
         )
@@ -61,14 +61,6 @@ def recommend_properties(quiz: QuizRequest, db: Session = Depends(get_db)):
             recommendations.append(
                 PropertyResponse(
                     id=prop.id,
-                    title=prop.title,
-                    description=prop.description,
-                    min_investment=prop.min_investment,
-                    lock_in_years=prop.lock_in_years,
-                    risk_rating=prop.risk_rating,
-                    expected_yield=prop.expected_yield,
-                    location=prop.location,
-                    property_type=prop.property_type,
                     risk_assessment=risk_assessment,
                     roi_prediction=roi_prediction,
                 )

@@ -10,7 +10,7 @@ class RiskBreakdown(BaseModel):
 
 
 class RiskAssessmentResponse(BaseModel):
-    property_id: int
+    property_id: str
     overall_score: float
     risk_level: str
     breakdown: RiskBreakdown
@@ -19,7 +19,7 @@ class RiskAssessmentResponse(BaseModel):
 
 
 class BatchRiskRequest(BaseModel):
-    property_ids: List[int]
+    property_ids: List[str]
     goal: str
     lock_in_years: int
     risk_tolerance: str
