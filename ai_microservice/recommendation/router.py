@@ -7,6 +7,10 @@ from sqlalchemy import select
 from shared.database import SessionLocal, Property
 from shared.embedding_service import get_embedding
 from recommendation.schemas import QuizRequest, RecommendationResponse, PropertyResponse
+from risk_assessment.engine import assess_risk
+from risk_assessment.schemas import RiskAssessmentResponse as RiskAssessSchema
+from roi_prediction.engine import predict_roi
+from roi_prediction.schemas import ROIPredictionResponse as ROISchema
 
 logger = logging.getLogger(__name__)
 
@@ -46,23 +50,36 @@ def recommend_properties(quiz: QuizRequest, db: Session = Depends(get_db)):
 
         results = db.execute(query).scalars().all()
 
-        recommendations = [
-            PropertyResponse(
-                id=prop.id,
-                title=prop.title,
-                description=prop.description,
-                min_investment=prop.min_investment,
-                lock_in_years=prop.lock_in_years,
-                risk_rating=prop.risk_rating,
+        recommendations = []
+        for prop in results:
+            risk_data = assess_risk(prop, quiz.risk_tolerance, quiz.experience)
+            risk_assessment = RiskAssessSchema(property_id=prop.id, **risk_data)
+
+            roi_data = predict_roi(prop, quiz.capital, quiz.lock_in_years)
+            roi_prediction = ROISchema(property_id=prop.id, **roi_data)
+
+            recommendations.append(
+                PropertyResponse(
+                    id=prop.id,
+                    title=prop.title,
+                    description=prop.description,
+                    min_investment=prop.min_investment,
+                    lock_in_years=prop.lock_in_years,
+                    risk_rating=prop.risk_rating,
+                    expected_yield=prop.expected_yield,
+                    location=prop.location,
+                    property_type=prop.property_type,
+                    risk_assessment=risk_assessment,
+                    roi_prediction=roi_prediction,
+                )
             )
-            for prop in results
-        ]
 
         profile = quiz.model_dump()
+        aligned = sum(1 for r in recommendations if r.risk_assessment and r.risk_assessment.user_alignment == "Well-aligned")
         risk_summary = (
             f"Based on your {profile['risk_tolerance']} risk tolerance and "
-            f"{profile['experience']} experience, these properties offer a "
-            f"balanced approach to your goal of {profile['goal']}."
+            f"{profile['experience']} experience, {aligned} of {len(recommendations)} "
+            f"recommended properties are well-aligned with your profile."
         )
         market_analysis_context = (
             "The Moroccan real estate market currently shows strong demand "

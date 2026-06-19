@@ -7,6 +7,9 @@ CREATE TABLE IF NOT EXISTS properties (
     min_investment FLOAT,
     lock_in_years INTEGER,
     risk_rating VARCHAR,
+    expected_yield FLOAT,
+    location VARCHAR,
+    property_type VARCHAR,
     embedding VECTOR(384)
 );
 

@@ -23,4 +23,7 @@ class Property(Base):
     min_investment = Column(Float)
     lock_in_years = Column(Integer)
     risk_rating = Column(String)
+    expected_yield = Column(Float, nullable=True)
+    location = Column(String, nullable=True)
+    property_type = Column(String, nullable=True)
     embedding = Column(Vector(384))
