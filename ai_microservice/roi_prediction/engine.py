@@ -29,7 +29,7 @@ _TYPE_MODIFIER = {
 
 
 def predict_roi(property: Property, capital: float, lock_in_years: int) -> dict:
-    base_yield = property.expected_yield if property.expected_yield else 5.0
+    base_yield = property.rental_yield if property.rental_yield else 5.0
 
     location_key = (property.location or "").strip().lower()
     location_appreciation = 0.0
@@ -38,7 +38,7 @@ def predict_roi(property: Property, capital: float, lock_in_years: int) -> dict:
             location_appreciation = rate
             break
 
-    risk_key = (property.risk_rating or "medium").strip().lower()
+    risk_key = (property.risk_assessment or "medium").strip().lower()
     risk_premium = _RISK_PREMIUM.get(risk_key, 1.0)
 
     type_key = (property.property_type or "").strip().lower()

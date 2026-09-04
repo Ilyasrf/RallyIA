@@ -5,24 +5,18 @@ from risk_assessment.schemas import RiskAssessmentResponse
 from roi_prediction.schemas import ROIPredictionResponse
 
 
+from typing import Literal
+
 class QuizRequest(BaseModel):
-    goal: str
-    lock_in_years: int
-    risk_tolerance: str
+    goal: Literal['passive_income', 'capital_appreciation', 'balanced', 'short_term_flip']
+    lock_in_years: Literal[1, 3, 5, 7]
+    risk_tolerance: Literal['low', 'moderate', 'high']
     capital: float
-    experience: str
+    experience: Literal['beginner', 'intermediate', 'advanced']
 
 
 class PropertyResponse(BaseModel):
-    id: int
-    title: str
-    description: str
-    min_investment: float
-    lock_in_years: int
-    risk_rating: str
-    expected_yield: Optional[float] = None
-    location: Optional[str] = None
-    property_type: Optional[str] = None
+    id: str
     risk_assessment: Optional[RiskAssessmentResponse] = None
     roi_prediction: Optional[ROIPredictionResponse] = None
 

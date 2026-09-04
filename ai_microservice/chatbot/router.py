@@ -30,10 +30,12 @@ def chat_with_bot(request: ChatRequest, db: Session = Depends(get_db)):
         db_query = (
             select(Property)
             .order_by(Property.embedding.cosine_distance(query_embedding))
-            .limit(2)
+            .limit(5)
         )
         relevant_properties = db.execute(db_query).scalars().all()
-    except Exception:
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).error("DB Query failed: %s", e)
         relevant_properties = []
 
     messages_dict = [{"role": msg.role, "content": msg.content} for msg in request.messages]
